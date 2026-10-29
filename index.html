@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURA Store | Premium Lifestyle & Fashion</title>
+  
+  <!-- FontAwesome & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- PeerJS SDK for Real-time Device Connectivity -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+  <style>
+    :root {
+      --bg-store: #0b0f19;
+      --card-store: #151c2c;
+      --accent-store: #6366f1;
+      --text-store: #f3f4f6;
+      --text-muted: #9ca3af;
+      
+      --bg-chat: #090a0f;
+      --accent-snap: #fffc00;
+      --bubble-self: #2563eb;
+      --bubble-peer: #1e293b;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-store);
+      color: var(--text-store);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ==========================================================================
+       DISGUISE VIEW: E-COMMERCE STORE FRONT
+       ========================================================================== */
+    #store-view {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .store-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      background: rgba(11, 15, 25, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .store-brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .store-brand i { color: var(--accent-store); }
+
+    .search-container {
+      position: relative;
+      flex: 1;
+      max-width: 420px;
+      margin: 0 1rem;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 0.65rem 1rem 0.65rem 2.5rem;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      color: #fff;
+      font-size: 0.875rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-container input:focus {
+      border-color: var(--accent-store);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .search-container i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .store-actions {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      color: var(--text-store);
+      font-size: 1.2rem;
+    }
+
+    .hero-banner {
+      margin: 1.5rem;
+      padding: 3rem 2rem;
+      background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hero-banner h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.2rem;
+      line-height: 1.2;
+    }
+
+    .hero-banner p {
+      color: #c7d2fe;
+      max-width: 480px;
+      font-size: 0.95rem;
+    }
+
+    .btn-shop {
+      align-self: flex-start;
+      padding: 0.75rem 1.75rem;
+      background: #fff;
+      color: #000;
+      font-weight: 600;
+      border-radius: 99px;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn-shop:hover { transform: translateY(-2px); }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.25rem;
+      padding: 1.5rem;
+    }
+
+    .product-card {
+      background: var(--card-store);
+      border-radius: 16px;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: transform 0.2s ease;
+    }
+
+    .product-card:hover { transform: translateY(-4px); }
+
+    .product-img {
+      width: 100%;
+      height: 180px;
+      background: #0f172a;
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: #334155;
+    }
+
+    .product-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .product-price { color: var(--accent-store); font-weight: 700; font-size: 0.9rem; }
+
+    /* ==========================================================================
+       SECRET CHAT ROOM VIEW
+       ========================================================================== */
+    #chat-view {
+      display: none;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background: var(--bg-chat);
+      flex-direction: column;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .chat-header {
+      padding: 0.75rem 1rem;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .user-info { display: flex; align-items: center; gap: 0.75rem; }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-snap), #f59e0b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .user-details h3 { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+    .status-badge { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
+    .status-badge.online { background: var(--success); }
+
+    .peer-connection-bar {
+      background: #1e293b;
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .peer-input-group { display: flex; gap: 0.5rem; }
+    .peer-input-group input {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.75rem;
+    }
+
+    .btn-connect {
+      background: var(--bubble-self);
+      color: #fff;
+      border: none;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 0.5rem; }
+
+    .btn-icon {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn-icon:hover { background: rgba(255, 255, 255, 0.15); }
+    .btn-panic { background: rgba(239, 68, 68, 0.2); color: var(--danger); border-color: rgba(239, 68, 68, 0.3); }
+
+    .chat-messages {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      scroll-behavior: smooth;
+    }
+
+    .message-bubble {
+      max-width: 75%;
+      padding: 0.75rem 1rem;
+      border-radius: 18px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      position: relative;
+      word-break: break-word;
+      animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .message-bubble.self {
+      align-self: flex-end;
+      background: var(--bubble-self);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message-bubble.peer {
+      align-self: flex-start;
+      background: var(--bubble-peer);
+      color: #f1f5f9;
+      border-bottom-left-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .message-meta {
+      font-size: 0.65rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.25rem;
+    }
+
+    .system-alert {
+      align-self: center;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      padding: 0.4rem 0.8rem;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Live Character Preview Bubble (Snapchat Style) */
+    .live-preview-container {
+      padding: 0.5rem 1rem;
+      min-height: 38px;
+    }
+
+    .live-preview-bubble {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px dashed rgba(255, 252, 0, 0.4);
+      padding: 0.4rem 0.8rem;
+      border-radius: 12px;
+      font-size: 0.825rem;
+      color: var(--accent-snap);
+      animation: pulse 1.5s infinite;
+    }
+
+    .chat-input-area {
+      padding: 0.75rem 1rem;
+      background: rgba(15, 23, 42, 0.9);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.75rem 1rem;
+      border-radius: 99px;
+      color: #fff;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .chat-input-area input:focus {
+      border-color: var(--accent-snap);
+    }
+
+    .btn-send {
+      background: var(--accent-snap);
+      color: #000;
+      border: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: transform 0.15s ease;
+    }
+
+    .btn-send:active { transform: scale(0.9); }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    @keyframes pulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
+    input { -webkit-user-select: text; user-select: text; }
+    /* Layout safety: only the message list may shrink, everything else keeps its size */
+    .chat-header, .peer-connection-bar, .live-preview-container, .chat-input-area { flex-shrink: 0; }
+    .chat-messages { min-height: 0; overscroll-behavior: contain; }
+    .live-preview-container { max-height: 96px; overflow: hidden; }
+    .live-preview-bubble { max-width: 100%; word-break: break-word; }
+    .chat-input-area input { min-width: 0; }
+    /* iOS zooms the page when a focused input is under 16px and never zooms back,
+       which pushes the bottom of the fixed chat view off-screen */
+    @media (pointer: coarse) { input { font-size: 16px !important; } }
+    .peer-connection-bar { gap: 0.5rem; }
+    .peer-connection-bar > div:first-child { flex-shrink: 0; }
+    .peer-input-group { flex: 1; min-width: 0; justify-content: flex-end; }
+    .peer-input-group input { flex: 0 1 9.5rem; min-width: 0; }
+    .chat-input-area .btn-icon { flex-shrink: 0; }
+    .message-bubble img.chat-img { display: block; max-width: min(260px, 100%); max-height: 320px; border-radius: 10px; cursor: zoom-in; }
+    .message-bubble audio { display: block; width: 220px; max-width: 100%; height: 36px; }
+    .media-missing { font-style: italic; opacity: 0.7; font-size: 0.85rem; }
+    .lightbox { position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0.92); display: flex; align-items: center; justify-content: center; }
+    .lightbox img { max-width: 100%; max-height: 100%; }
+    #btn-mic.recording { background: rgba(239, 68, 68, 0.3); color: var(--danger); animation: recpulse 1s infinite; }
+    @keyframes recpulse { 50% { opacity: 0.45; } }
+    #btn-ping { -webkit-touch-callout: none; }
+    .tg-modal { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.72); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .tg-card { width: 100%; max-width: 340px; background: #111827; color: #e5e7eb; border: 1px solid #374151; border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; }
+    .tg-card small { opacity: 0.7; line-height: 1.35; }
+    .tg-card label { margin-top: 0.4rem; opacity: 0.85; }
+    .tg-card input { width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #374151; background: #0b0f19; color: #fff; }
+    .tg-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.6rem; }
+    #tg-msg { min-height: 1.2em; opacity: 0.9; }
+    .message-bubble { touch-action: pan-y; transition: transform 0.15s; }
+    .reply-quote { border-left: 3px solid #38bdf8; background: rgba(255,255,255,0.08); border-radius: 6px; padding: 3px 8px; margin-bottom: 5px; font-size: 0.78rem; cursor: pointer; max-width: 100%; }
+    .reply-quote b { display: block; opacity: 0.9; }
+    .reply-quote span { display: block; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .message-bubble.flash { animation: flashbg 1.2s; }
+    @keyframes flashbg { 0%, 60% { filter: brightness(1.8); } 100% { filter: none; } }
+    .reply-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; flex-shrink: 0; border-top: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); }
+    .reply-bar-text { flex: 1; min-width: 0; display: flex; flex-direction: column; border-left: 3px solid #38bdf8; padding-left: 0.5rem; font-size: 0.8rem; }
+    .reply-bar-text span { opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cam-overlay { position: fixed; inset: 0; z-index: 9999; background: #000; display: flex; align-items: center; justify-content: center; }
+    .cam-video, .cam-snap { width: 100%; height: 100%; object-fit: contain; }
+    .cam-bar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-around; padding: 1.2rem 1rem calc(1.2rem + env(safe-area-inset-bottom, 0px)); background: linear-gradient(transparent, rgba(0,0,0,0.65)); }
+    .cam-btn { width: 52px; height: 52px; border-radius: 50%; border: none; background: rgba(255,255,255,0.18); color: #fff; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+    .cam-shutter { width: 72px; height: 72px; border-radius: 50%; border: 4px solid #fff; background: rgba(255,255,255,0.25); color: #fff; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
+    .cam-shutter.send { background: #22c55e; border-color: #22c55e; }
+    textarea { -webkit-user-select: text; user-select: text; }
+    /* tabs + shopping list */
+    .chat-tabs { display: flex; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .chat-tabs button { flex: 1; padding: 0.55rem; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; }
+    .chat-tabs button.active { color: var(--accent-snap); border-bottom-color: var(--accent-snap); }
+    .tab-badge { display: inline-block; min-width: 16px; padding: 0 4px; margin-left: 5px; border-radius: 9px; background: var(--danger); color: #fff; font-size: 0.65rem; }
+    #list-view { display: none; flex: 1; min-height: 0; flex-direction: column; padding: 0.75rem; gap: 0.6rem; }
+    #chat-view.tab-list #list-view { display: flex; }
+    #chat-view.tab-list #chat-messages, #chat-view.tab-list .live-preview-container, #chat-view.tab-list .reply-bar, #chat-view.tab-list .chat-input-area { display: none !important; }
+    .list-add { display: flex; gap: 0.5rem; }
+    .list-add input { flex: 1; min-width: 0; padding: 0.65rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: #fff; }
+    .list-items { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.4rem; }
+    .list-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.7rem; background: rgba(255,255,255,0.05); border-radius: 10px; }
+    .list-item span { flex: 1; min-width: 0; word-break: break-word; }
+    .list-item.done span { text-decoration: line-through; opacity: 0.5; }
+    .list-chk { width: 24px; height: 24px; flex-shrink: 0; border-radius: 7px; border: 2px solid var(--text-muted); background: none; color: #000; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
+    .list-item.done .list-chk { background: var(--success); border-color: var(--success); }
+    .list-x { background: none; border: none; color: var(--text-muted); padding: 0.2rem 0.4rem; }
+    .list-empty { opacity: 0.6; text-align: center; padding: 1.5rem; }
+    .list-foot { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; opacity: 0.85; }
+    .act-link { background: none; border: none; color: var(--accent-snap); font-size: 0.8rem; }
+    /* message menu, reactions, toast */
+    .msg-menu { position: fixed; inset: 0; z-index: 9998; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; }
+    .msg-sheet { width: 100%; max-width: 420px; max-height: 80vh; overflow-y: auto; background: #111827; color: #e5e7eb; border-radius: 16px 16px 0 0; padding: 0.8rem 0.8rem calc(0.8rem + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 0.3rem; }
+    .msg-emojis { display: flex; justify-content: space-around; padding: 0.3rem 0 0.6rem; }
+    .msg-emojis button { font-size: 1.6rem; background: none; border: none; padding: 0.2rem 0.4rem; border-radius: 10px; }
+    .msg-emojis button.on { background: rgba(255,255,255,0.15); }
+    .msg-sheet .act { display: flex; align-items: center; gap: 0.7rem; padding: 0.75rem 0.6rem; background: none; border: none; color: inherit; font-size: 0.95rem; border-radius: 8px; text-align: left; }
+    .msg-sheet .act.danger { color: var(--danger); }
+    .reactions { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.3rem; }
+    .reactions span { background: rgba(255,255,255,0.14); border-radius: 12px; padding: 1px 7px; font-size: 0.85rem; }
+    .reactions span.mine { outline: 1px solid var(--accent-snap); cursor: pointer; }
+    .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); z-index: 10000; background: rgba(17,24,39,0.95); color: #fff; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; }
+
+    /* calls */
+    .chat-tabs .tab-call { flex: 0 0 48px; font-size: 0.95rem; color: var(--success); }
+    .call-overlay { position: fixed; inset: 0; z-index: 9990; background: #05070d; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; }
+    .call-remote { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+    .call-local { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; width: 96px; height: 136px; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,255,255,0.35); background: #111; transform: scaleX(-1); z-index: 2; }
+    .call-local.rear { transform: none; }
+    .call-info { position: relative; z-index: 2; text-align: center; padding: 1rem; text-shadow: 0 1px 6px rgba(0,0,0,0.7); }
+    .call-info .call-ava { width: 96px; height: 96px; margin: 0 auto 1rem; border-radius: 50%; background: linear-gradient(135deg, var(--accent-snap), #f59e0b); color: #000; font-size: 2rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .call-info h2 { font-size: 1.3rem; }
+    .call-info p { opacity: 0.8; margin-top: 0.3rem; font-size: 0.9rem; }
+    .call-bar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; justify-content: center; gap: 1.1rem; padding: 1.2rem 1rem calc(1.4rem + env(safe-area-inset-bottom, 0px)); background: linear-gradient(transparent, rgba(0,0,0,0.7)); }
+    .call-btn { width: 56px; height: 56px; border-radius: 50%; border: none; background: rgba(255,255,255,0.2); color: #fff; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+    .call-btn.off { background: #fff; color: #000; }
+    .call-btn.end { background: var(--danger); }
+    .call-btn.ok { background: var(--success); }
+    .call-ring { animation: recpulse 1s infinite; }
+    .call-info.mini { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); left: 12px; padding: 0.3rem 0.8rem; background: rgba(0,0,0,0.45); border-radius: 99px; }
+    .call-info.mini .call-ava, .call-info.mini h2 { display: none; }
+    .call-info.mini p { margin: 0; font-size: 0.8rem; opacity: 1; }
+    /* store (the cover) */
+    .cat-row { display: flex; gap: 0.5rem; padding: 1rem 1.5rem 0; overflow-x: auto; }
+    .chip { flex-shrink: 0; padding: 0.4rem 0.9rem; border-radius: 99px; background: var(--card-store); border: 1px solid rgba(255,255,255,0.08); color: var(--text-muted); font-size: 0.8rem; }
+    .chip.active { background: var(--accent-store); border-color: var(--accent-store); color: #fff; }
+    .sale-bar { margin: 1rem 1.5rem 0; padding: 0.6rem 1rem; border-radius: 12px; background: linear-gradient(90deg, #f59e0b, #ef4444); color: #fff; font-weight: 600; font-size: 0.85rem; display: flex; justify-content: space-between; gap: 0.5rem; }
+    .product-rating { color: #fbbf24; font-size: 0.75rem; margin-bottom: 0.25rem; }
+    .btn-add { margin-top: 0.6rem; width: 100%; padding: 0.5rem; border-radius: 10px; border: none; background: var(--accent-store); color: #fff; font-weight: 600; }
+    .no-results { padding: 2rem 1.5rem; text-align: center; color: var(--text-muted); }
+    .store-footer { padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.75rem; }
+    .cart-wrap { position: relative; cursor: pointer; }
+    .cart-badge { position: absolute; top: -9px; right: -11px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px; background: var(--danger); color: #fff; font-size: 0.65rem; font-style: normal; display: flex; align-items: center; justify-content: center; }
+    .cart-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .cart-row b { flex: 1; font-weight: 600; font-size: 0.85rem; }
+    .cart-row button { width: 26px; height: 26px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: #fff; }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       1. STORE VIEW (THE DISGUISE FRONTEND)
+       ========================================================================== -->
+  <div id="store-view">
+    <nav class="store-nav">
+      <div class="store-brand">
+        <i class="fa-solid fa-gem"></i> AURA
+      </div>
+      
+      <div class="search-container">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="store-search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Search products, brands, promo codes..." oninput="filterStore(this.value); checkSecretPasscode(this.value)">
+      </div>
+
+      <div class="store-actions">
+        <i class="fa-regular fa-heart"></i>
+        <span class="cart-wrap" id="cart-btn"><i class="fa-solid fa-bag-shopping"></i><b class="cart-badge" id="cart-count" style="display:none">0</b></span>
+      </div>
+    </nav>
+
+    <div class="hero-banner">
+      <h1>Spring Fashion Collection 2026</h1>
+      <p>Discover minimal modern streetwear and exclusive accessory drops. Up to 40% off selected apparel.</p>
+      <button class="btn-shop" onclick="document.getElementById('products-grid').scrollIntoView({behavior:'smooth'})">Explore Collection</button>
+    </div>
+
+    <div class="sale-bar"><span>Flash sale: extra 15% off with code AURA15</span><span id="sale-timer">--:--:--</span></div>
+    <div class="cat-row">
+      <button class="chip active" data-cat="All">All</button><button class="chip" data-cat="Fashion">Fashion</button>
+      <button class="chip" data-cat="Electronics">Electronics</button><button class="chip" data-cat="Home">Home</button><button class="chip" data-cat="Beauty">Beauty</button>
+    </div>
+    <div class="products-grid" id="products-grid"></div>
+    <div class="no-results" id="no-results" style="display:none"></div>
+    <div class="store-footer">Free shipping on orders over $75 &middot; 30-day returns &middot; &copy; 2026 AURA Store</div>
+  </div>
+
+  <!-- ==========================================================================
+       2. SECRET CHAT VIEW (SNAPCHAT-STYLE INTERFACE)
+       ========================================================================== -->
+  <div id="chat-view">
+    <div class="chat-header">
+      <div class="user-info">
+        <div class="avatar" id="my-avatar">U</div>
+        <div class="user-details">
+          <h3 id="chat-title">Secret Room <span class="status-badge" id="status-indicator"></span></h3>
+          <span style="font-size: 0.7rem; color: var(--text-muted);" id="peer-status-text">Disconnected</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-icon" id="btn-ping" title="Ping your partner (long-press: Telegram setup)"><i class="fa-solid fa-bell-concierge"></i></button>
+        <button class="btn-icon" id="btn-sound" onclick="toggleAudio()" title="Toggle Sound Chime">
+          <i class="fa-solid fa-bell"></i>
+        </button>
+        <button class="btn-icon" onclick="clearHistory()" title="Clear saved chat history">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+        <button class="btn-icon btn-panic" onclick="triggerPanicLock()" title="Instant Lock / Panic Button">
+          <i class="fa-solid fa-lock"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-tabs">
+      <button id="tab-chat" class="active" onclick="showTab('chat')">Chat</button>
+      <button id="tab-list" onclick="showTab('list')">Shopping list<span class="tab-badge" id="list-badge" style="display:none"></span></button>
+      <button class="tab-call" id="btn-call" onclick="startCall(false)" title="Voice call"><i class="fa-solid fa-phone"></i></button>
+      <button class="tab-call" id="btn-vcall" onclick="startCall(true)" title="Video call"><i class="fa-solid fa-video"></i></button>
+    </div>
+
+    <!-- Chat Messages Feed -->
+    <div class="chat-messages" id="chat-messages">
+      <div class="system-alert">
+        <i class="fa-solid fa-shield-halved"></i> End-to-end P2P Encrypted Session Active
+      </div>
+    </div>
+
+    <div id="list-view">
+      <div class="list-add">
+        <input id="list-input" type="text" maxlength="60" placeholder="Add an item..." onkeydown="if(event.key==='Enter') addListItem()">
+        <button class="btn-send" onmousedown="event.preventDefault()" onclick="addListItem()" title="Add"><i class="fa-solid fa-plus"></i></button>
+      </div>
+      <div class="list-items" id="list-items"></div>
+      <div class="list-foot"><span id="list-count"></span><button class="act-link" onclick="clearDone()">Clear checked</button></div>
+    </div>
+
+    <!-- Snapchat-Style Live Typing Character Preview -->
+    <div class="live-preview-container">
+      <div class="live-preview-bubble" id="live-preview-bubble" style="display: none;">
+        <i class="fa-solid fa-pen-nib"></i> <span id="live-typing-text"></span>
+      </div>
+    </div>
+
+    <!-- Chat Input Bar -->
+    <div class="reply-bar" id="reply-bar" style="display:none">
+      <div class="reply-bar-text"><b id="reply-who"></b><span id="reply-snip"></span></div>
+      <button class="btn-icon" onmousedown="event.preventDefault()" onclick="clearReply()" title="Cancel reply"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="chat-input-area">
+      <button class="btn-icon" id="btn-attach" onclick="openImagePicker()" title="Send a photo"><i class="fa-solid fa-image"></i></button>
+      <button class="btn-icon" id="btn-camera" onclick="openCamera()" title="Take a photo"><i class="fa-solid fa-camera"></i></button>
+      <button class="btn-icon" id="btn-mic" onclick="toggleRecord()" title="Record a voice note"><i class="fa-solid fa-microphone"></i></button>
+      <button class="btn-icon btn-panic" id="btn-rec-cancel" onclick="cancelRecord()" title="Cancel recording" style="display:none"><i class="fa-solid fa-xmark"></i></button>
+      <input type="file" id="img-input" accept="image/*" style="display:none" onchange="pickImage(this)">
+      <input type="text" id="chat-input" placeholder="Send a message..." oninput="handleTyping(this.value)" onkeydown="if(event.key==='Enter') sendMessage()">
+      <button class="btn-send" onmousedown="event.preventDefault()" onclick="sendMessage()">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+(() => {
+  'use strict';
+  const PASSCODE = '18771877';   // unlocks the chat AND is the shared room PIN
+  const LOCK_MS = 120000;        // idle auto-lock
+  const PING_MS = 15000;         // keep-alive
+  const HIST_KEY = 'aura_history_v1';
+  const HIST_MAX = 500;
+  const PING_TEXT = "The store is ready, let's go shopping! \u{1F6CD}\u{FE0F}";
+  const $ = (id) => document.getElementById(id);
+
+  const S = {
+    peer: null, roomPeer: null, room: null, joining: false, roomTimer: null,
+    conns: new Set(), active: null, phase: '',
+    locked: true, audio: true, audioCtx: null, lockTimer: null,
+    hinted: false, lastPing: 0, replyTo: null, armed: false, polling: false, editing: null, tab: 'chat'
+  };
+
+  /* ================= HISTORY (localStorage) ================= */
+  // entry: { id, who: 'self' | 'peer', text, time, st: 'pending' | 'sent' | 'read' | '' }
+  let history = [];
+  const seen = new Set();
+  const media = new Map();       // image id -> blob URL (memory only, never written to storage)
+  const urls = new Set();        // every blob URL we create, so they can all be revoked
+  const incoming = new Map();    // media transfers being reassembled
+  const done = new Set();        // media ids already received this session
+  const transient = new Map();   // voice notes: in-memory entries that are never saved
+  const stash = new Map();       // edits/reactions that arrived before their message
+  let rec = null;                // active voice recording (RAM only)
+  let cam = null;                // open camera viewfinder (stream lives only while it is open)
+
+  function loadHistory() {
+    try {
+      const a = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+      return Array.isArray(a) ? a : [];
+    } catch (e) { return []; }
+  }
+  function saveHistory() {
+    if (history.length > HIST_MAX) history = history.slice(-HIST_MAX);
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(history)); }
+    catch (e) {
+      try { history = history.slice(-100); localStorage.setItem(HIST_KEY, JSON.stringify(history)); } catch (e2) {}
+    }
+  }
+  function clearHistory() {
+    if (!confirm('Delete the saved chat history on this device?')) return;
+    history = []; seen.clear(); saveHistory(); clearReply();
+    urls.forEach((u) => URL.revokeObjectURL(u)); urls.clear(); media.clear(); done.clear(); transient.clear(); stash.clear();
+    document.querySelectorAll('#chat-messages .message-bubble').forEach((b) => b.remove());
+  }
+
+  /* ================= CONNECTION TRACKING ================= */
+  function openConn() {
+    if (S.active && S.active.open) return S.active;
+    for (const c of S.conns) if (c.open) { S.active = c; return c; }
+    return null;
+  }
+  function send(obj) {                       // true only if handed to an open connection
+    const c = openConn();
+    if (!c) return false;
+    try { c.send(obj); return true; }
+    catch (e) { console.error('[send]', e); return false; }
+  }
+  function setStatus() {
+    const c = openConn();
+    $('status-indicator').classList.toggle('online', !!c);
+    const queued = history.filter((h) => h.who === 'self' && h.st === 'pending').length;
+    $('peer-status-text').innerText = c ? 'Connected'
+      : (S.phase || 'Disconnected') + (queued ? ' \u00b7 ' + queued + ' queued' : '');
+  }
+  function setPhase(t) { S.phase = t; setStatus(); }
+
+  function track(c) {                        // used for incoming AND outgoing connections
+    S.conns.add(c);
+    c.on('open', () => {
+      S.active = c;
+      if (S.room) S.room.tries = 0;
+      setStatus(); systemAlert('Connected'); fitViewport();
+      flushOutbox();
+      listSync();
+      relayPoll();
+    });
+    c.on('data', onData);
+    c.on('close', () => {
+      S.conns.delete(c);
+      if (S.active === c) S.active = null;
+      if (!openConn()) {
+        incoming.clear();
+        systemAlert('Partner disconnected');
+        setPhase(S.roomPeer ? 'Waiting for partner...' : 'Reconnecting...');
+        scheduleRoomRetry();
+      } else setStatus();
+    });
+    c.on('error', (e) => console.error('[conn]', e));
+  }
+
+  // Chat is 1:1: once connected, strangers who dial in are turned away
+  function acceptIncoming(c) {
+    const cur = openConn();
+    if (cur && cur.peer !== c.peer) { c.on('open', () => { try { c.close(); } catch (e) {} }); return; }
+    track(c);
+  }
+
+  function connectTo(id) {
+    if (!S.peer || !S.peer.open || !id) return;
+    track(S.peer.connect(id, { reliable: true, serialization: 'json' }));
+  }
+
+  /* ================= ROOM (auto-connect, no IDs to type) ================= */
+  // The passcode is hashed into a shared room ID. Whoever arrives first claims it
+  // and waits; the other one finds it taken and dials it.
+  async function roomIdFor(pin) {
+    const data = new TextEncoder().encode('aura-room-v1:' + pin);
+    if (window.crypto && crypto.subtle) {
+      const buf = await crypto.subtle.digest('SHA-256', data);
+      return 'aura-room-' + [...new Uint8Array(buf)].slice(0, 12).map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+    let h = 5381;
+    for (const b of data) h = ((h * 33) ^ b) >>> 0;
+    return 'aura-room-' + h.toString(16).padStart(8, '0');
+  }
+
+  async function joinRoom() {
+    if (S.joining || S.room || !S.peer || !S.peer.open) return;
+    S.joining = true;
+    try {
+      S.room = { id: await roomIdFor(PASSCODE), tries: 0 };
+      setPhase('Connecting...');
+      attemptRoom();
+    } finally { S.joining = false; }
+  }
+
+  function attemptRoom() {
+    const R = S.room;
+    if (!R || openConn()) return;
+    if (S.roomPeer && !S.roomPeer.destroyed) { setPhase('Waiting for partner...'); return; }
+
+    const rp = new Peer(R.id);
+    S.roomPeer = rp;
+    rp.on('open', () => { setPhase('Waiting for partner...'); });
+    rp.on('connection', acceptIncoming);
+    rp.on('call', onIncomingCall);
+    rp.on('disconnected', () => { if (!rp.destroyed) rp.reconnect(); });
+    rp.on('error', (err) => {
+      rp.destroy();
+      if (S.roomPeer === rp) S.roomPeer = null;
+      if (err.type === 'unavailable-id') {           // someone already holds the room: dial them
+        setPhase('Connecting...');
+        connectTo(R.id);
+      } else {
+        console.error('[room]', err.type, err);
+        scheduleRoomRetry();
+      }
+    });
+  }
+
+  function scheduleRoomRetry() {
+    const R = S.room;
+    if (!R || S.roomTimer) return;
+    S.roomTimer = setTimeout(() => {
+      S.roomTimer = null; R.tries++;
+      if (S.room === R) attemptRoom();
+    }, R.tries < 8 ? 3000 : 15000);
+  }
+
+  function initPeer() {
+    if (S.peer) return;
+    const p = new Peer();                            // server-assigned ID, never typed by anyone
+    S.peer = p;
+    p.on('open', (id) => { $('my-avatar').innerText = id.slice(-2).toUpperCase(); joinRoom(); });
+    p.on('connection', acceptIncoming);
+    p.on('call', onIncomingCall);
+    p.on('disconnected', () => { if (!p.destroyed) p.reconnect(); });
+    p.on('error', (err) => {
+      console.error('[peer]', err.type, err);
+      if (err.type === 'peer-unavailable') { scheduleRoomRetry(); return; }   // host vanished: try again
+      systemAlert('Connection error: ' + err.type);
+    });
+  }
+
+  // Phones suspend tabs in the background: when we come back, revive everything
+  function resume() {
+    relayTick();
+    [S.peer, S.roomPeer].forEach((p) => { if (p && !p.destroyed && p.disconnected) p.reconnect(); });
+    if (S.room && !openConn()) { S.room.tries = 0; scheduleRoomRetry(); }
+    else if (!S.room) joinRoom();
+    setStatus();
+  }
+  // Leaving the page for ANY reason (browser closed, app switched, screen off) locks it at once,
+  // so whatever resumes later is already the store page. The connection stays alive underneath.
+  document.addEventListener('visibilitychange', () => {
+    lockView();
+    if (!document.hidden) resume();
+  });
+  document.addEventListener('freeze', lockView);                                   // browser freezing the tab
+  window.addEventListener('pagehide', lockView);
+  window.addEventListener('pageshow', () => lockView());                           // back/forward-cache restore
+  window.addEventListener('online', resume);
+  setInterval(() => send({ type: 'PING' }), PING_MS);
+
+  /* ================= DOM ================= */
+  function fitViewport() {                           // keep chat = visible area (keyboard, toolbars)
+    const v = window.visualViewport, cv = $('chat-view');
+    if (!v || S.locked) return;
+    cv.style.bottom = 'auto';
+    cv.style.top = v.offsetTop + 'px';
+    cv.style.height = v.height + 'px';
+  }
+  if (window.visualViewport) {
+    visualViewport.addEventListener('scroll', fitViewport);
+    visualViewport.addEventListener('resize', () => { fitViewport(); scrollDown(); });
+  }
+
+  function scrollDown() { const c = $('chat-messages'); c.scrollTop = c.scrollHeight; }
+
+  function systemAlert(text) {
+    const d = document.createElement('div');
+    d.className = 'system-alert';
+    const i = document.createElement('i');
+    i.className = 'fa-solid fa-triangle-exclamation';
+    d.append(i, ' ' + text);
+    $('chat-messages').appendChild(d);
+    scrollDown();
+  }
+
+  function tickClass(st) {
+    return st === 'read' ? 'fa-solid fa-check-double'
+      : st === 'pending' ? 'fa-regular fa-clock'
+      : st === 'fail' ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-check';
+  }
+
+  const bubbleEl = (id) => document.querySelector('.message-bubble[data-mid="' + CSS.escape(String(id)) + '"]');
+  const entryFor = (id) => history.find((h) => h.id === id) || transient.get(id) || null;
+  const isText = (e) => !e.kind && typeof e.text === 'string';
+
+  function rxRow(m) {
+    if (m.deleted || !m.rx || !(m.rx.me || m.rx.them)) return null;
+    const row = document.createElement('div');
+    row.className = 'reactions';
+    [['them', m.rx.them], ['mine', m.rx.me]].forEach(([k, em]) => {
+      if (!em) return;
+      const s = document.createElement('span');
+      s.textContent = em; s.className = k;
+      if (k === 'mine') s.onclick = (ev) => { ev.stopPropagation(); react(m.id, null); };   // tap your own reaction to remove it
+      row.appendChild(s);
+    });
+    return row;
+  }
+
+  function buildBubble(m) {
+    const b = document.createElement('div');
+    b.className = 'message-bubble ' + m.who;
+    const mk = (cls, txt) => { const d = document.createElement('div'); if (cls) d.className = cls; d.textContent = txt; return d; };
+    let body, snip;
+    if (m.deleted) { body = mk('media-missing', 'This message was deleted'); snip = 'Deleted message'; }
+    else if (m.kind === 'voice') {
+      body = document.createElement('audio');
+      body.controls = true; body.controlsList = 'nodownload'; body.preload = 'auto'; body.src = m.url || '';
+      snip = '\u{1F3A4} Voice note';
+    } else if (m.kind === 'image') {
+      const url = media.get(m.id);
+      if (url) { body = document.createElement('img'); body.className = 'chat-img'; body.alt = 'Photo'; body.src = url; body.onclick = () => openLightbox(url); }
+      else body = mk('media-missing', 'Photo (not saved on this device)');
+      snip = '\u{1F4F7} Photo';
+    } else { body = mk('', String(m.text == null ? '' : m.text)); snip = m.text; }
+
+    const meta = document.createElement('div');
+    meta.className = 'message-meta';
+    const time = document.createElement('span');
+    time.textContent = (m.time || '') + (m.edited && !m.deleted ? ' \u00b7 edited' : '');
+    meta.appendChild(time);
+    if (m.who === 'self' && !m.deleted) {
+      const i = document.createElement('i');
+      i.className = tickClass(m.st);
+      i.dataset.msg = m.id;
+      if (m.st === 'read') i.style.color = '#38bdf8';
+      meta.appendChild(i);
+    }
+    const parts = [];
+    if (m.reply && m.reply.id && !m.deleted) parts.push(quoteEl(m.reply));
+    parts.push(body, meta);
+    const rx = rxRow(m); if (rx) parts.push(rx);
+    b.append(...parts);
+    tagBubble(b, m, snip);
+    return b;
+  }
+
+  function addMessage(m) {
+    $('chat-messages').appendChild(buildBubble(m));
+    scrollDown();
+    drainStash(m.id);
+  }
+  function refreshBubble(id) {
+    const old = bubbleEl(id), e = entryFor(id);
+    if (old && e) old.replaceWith(buildBubble(e));
+  }
+
+  function setTick(id, st) {
+    const e = entryFor(id);
+    const i = document.querySelector('i[data-msg="' + CSS.escape(String(id)) + '"]');
+    const cur = e ? e.st : (i && i.className.includes('double') ? 'read' : '');
+    if (cur === 'read' && st !== 'read') return;                 // never step backwards
+    if (e) { e.st = st; saveHistory(); setStatus(); }
+    if (i) { i.className = tickClass(st); i.style.color = st === 'read' ? '#38bdf8' : st === 'fail' ? '#ef4444' : ''; }
+  }
+
+  function mkUrl(blob) { const u = URL.createObjectURL(blob); urls.add(u); return u; }
+
+  function openLightbox(url) {
+    const d = document.createElement('div');
+    d.className = 'lightbox';
+    const i = document.createElement('img');
+    i.src = url;
+    d.appendChild(i);
+    d.onclick = () => d.remove();
+    document.body.appendChild(d);
+  }
+
+  // Photos and voice notes: url is kept in memory only (voice entries are never saved)
+  function addMedia(m, url) {
+    if (m.kind === 'voice') { m.url = url; transient.set(m.id, m); }
+    else if (url) media.set(m.id, url);
+    addMessage(m);
+  }
+
+  /* ================= REPLIES ================= */
+  // Swipe a message right (or double-tap / double-click it) to reply to it.
+  function tagBubble(b, m, snip) {
+    b.dataset.mid = m.id; b.dataset.who = m.who;
+    if (m.deleted) b.dataset.deleted = '1';
+    b.dataset.snip = String(snip == null ? '' : snip).slice(0, 100);
+    attachReplyGestures(b);
+  }
+
+  function quoteEl(r) {
+    const q = document.createElement('div');
+    q.className = 'reply-quote';
+    q.dataset.rid = r.id;
+    const who = document.createElement('b');
+    who.textContent = r.own ? 'You' : 'Partner';
+    const s = document.createElement('span');
+    s.textContent = r.text;
+    q.append(who, s);
+    q.onclick = (e) => { e.stopPropagation(); jumpTo(r.id); };
+    return q;
+  }
+
+  function jumpTo(id) {
+    const el = document.querySelector('.message-bubble[data-mid="' + CSS.escape(String(id)) + '"]');
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  }
+
+  function attachReplyGestures(b) {
+    let x0 = 0, y0 = 0, on = false, fired = false, lp = null;
+    const reset = () => { on = false; clearTimeout(lp); b.style.transform = ''; };
+    b.addEventListener('pointerdown', (e) => {
+      x0 = e.clientX; y0 = e.clientY; on = true; fired = false;
+      clearTimeout(lp);
+      lp = setTimeout(() => { if (on && !fired) { fired = true; on = false; b.style.transform = ''; openMsgMenu(b); } }, 450);   // long-press = menu
+    });
+    b.addEventListener('pointermove', (e) => {
+      if (!on) return;
+      const dx = e.clientX - x0, dy = e.clientY - y0;
+      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) clearTimeout(lp);      // moving: not a long-press
+      if (Math.abs(dy) > 30) { reset(); return; }                       // it is a scroll, not a swipe
+      if (dx > 0) b.style.transform = 'translateX(' + Math.min(dx, 70) + 'px)';
+      if (dx > 60 && !fired) { fired = true; startReply(b); }
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => b.addEventListener(ev, reset));
+    b.addEventListener('dblclick', () => startReply(b));
+    b.addEventListener('contextmenu', (e) => { e.preventDefault(); openMsgMenu(b); });
+  }
+
+  function startReply(b) {
+    if (b.dataset.deleted) return;
+    S.replyTo = { id: b.dataset.mid, text: b.dataset.snip, own: b.dataset.who === 'self' };
+    $('reply-who').textContent = S.replyTo.own ? 'You' : 'Partner';
+    $('reply-snip').textContent = S.replyTo.text;
+    $('reply-bar').style.display = 'flex';
+    try { navigator.vibrate && navigator.vibrate(10); } catch (e) {}
+    $('chat-input').focus({ preventScroll: true });
+    scrollDown();
+  }
+
+  function clearReply() {
+    if (S.editing) $('chat-input').value = '';
+    S.editing = null;
+    S.replyTo = null;
+    $('reply-bar').style.display = 'none';
+  }
+
+  /* ================= MESSAGING ================= */
+  const wire = (e) => ({ type: 'CHAT_MESSAGE', id: e.id, text: e.text, time: e.time, ping: !!e.ping,
+    reply: e.reply ? { id: e.reply.id, text: e.reply.text, mine: e.reply.own } : undefined });
+
+  function postText(text, ping, reply) {
+    const e = {
+      id: Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      who: 'self', text, ping: !!ping, reply: reply || undefined,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      st: 'pending'
+    };
+    if (send(wire(e))) e.st = 'sent';        // live over P2P
+    history.push(e); seen.add(e.id); saveHistory();
+    addMessage(e);
+    if (e.st === 'pending') { setStatus(); relayStore(e, true); }   // partner not connected: drop it on the offline relay
+  }
+
+  function sendMessage() {
+    const input = $('chat-input');
+    input.focus({ preventScroll: true });     // keep the keyboard open for the next message
+    const text = input.value.trim();
+    if (!text) return;
+    if (S.editing) { const id = S.editing; clearReply(); input.value = ''; commitEdit(id, text); send({ type: 'LIVE_TYPING', text: '' }); return; }
+    const reply = S.replyTo;
+    postText(text, false, reply);
+    clearReply();
+    input.value = '';
+    send({ type: 'LIVE_TYPING', text: '' });
+  }
+
+  // "Ping": sends a fixed message that makes the partner's device show a notification
+  function sendPing() {
+    if (Date.now() - S.lastPing < 3000) return;                       // no spamming
+    S.lastPing = Date.now();
+    try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch (e) {}
+    postText(PING_TEXT, true);
+    const cfg = loadTg();
+    if (!cfg) {
+      if (!tgHinted) { tgHinted = true; systemAlert('Telegram alerts are not set up. Long-press the Ping button to set them up.'); }
+      return;
+    }
+    telegramSend(cfg, PING_TEXT).then((r) => {
+      if (r === 'fail') systemAlert('Telegram alert failed. Check the bot token and chat ID (long-press Ping).');
+      else if (r === 'unknown') systemAlert('Telegram alert could not be confirmed.');
+    });
+  }
+
+  // On every (re)connect, resend anything not yet confirmed. The receiver ignores duplicates.
+  function flushOutbox() {
+    // also re-confirm what we received, in case an earlier receipt was lost
+    history.filter((h) => h.who === 'peer').slice(-50).forEach((e) => send({ type: 'READ_RECEIPT', msgId: e.id }));
+    history.filter((h) => h.who === 'self' && !h.kind && !h.deleted && h.st !== 'read').slice(-50).forEach((e) => {
+      if (send(wire(e)) && e.st === 'pending') setTick(e.id, 'sent');
+    });
+  }
+
+  function handleTyping(v) { send({ type: 'LIVE_TYPING', text: v }); }
+
+  // Confirm a message: live over P2P if connected, otherwise through the relay
+  function ackRead(id) {
+    if (!send({ type: 'READ_RECEIPT', msgId: id })) relayPost({ v: 1, t: 'r', from: clientId, id });
+  }
+
+  function receiveChat(data) {
+    const id = String(data.id);
+    ackRead(id);                                          // always confirm, even duplicates
+    if (seen.has(id)) return;
+    const ping = data.ping === true;                      // ping text is fixed locally, never trusted from the wire
+    const e = { id, who: 'peer', text: ping ? PING_TEXT : String(data.text == null ? '' : data.text), time: data.time || '', st: '', ping };
+    const rp = data.reply && typeof data.reply === 'object' ? data.reply : null;
+    if (rp && rp.id) e.reply = { id: String(rp.id), text: String(rp.text || '').slice(0, 100), own: rp.mine === false };
+    history.push(e); seen.add(id); saveHistory();
+    addMessage(e);                                        // render + save first
+    chime(); fakeNotification(ping ? PING_TEXT : null);   // extras never throw
+  }
+
+  function onData(data) {
+    try {
+      if (typeof data === 'string') data = JSON.parse(data);
+      if (!data || typeof data !== 'object') return;
+      switch (data.type) {
+        case 'CHAT_MESSAGE': receiveChat(data); break;
+        case 'LIVE_TYPING': {
+          const txt = String(data.text || '');
+          $('live-preview-bubble').style.display = txt ? 'inline-flex' : 'none';
+          $('live-typing-text').innerText = txt;
+          break;
+        }
+        case 'MEDIA_START': {
+          const id = String(data.id), total = Number(data.total), mime = String(data.mime || '');
+          const kind = data.kind === 'voice' ? 'voice' : 'image';
+          const okMime = kind === 'image' ? /^image\/(jpeg|png|webp)$/.test(mime) : /^audio\/(webm|mp4|ogg|mpeg|aac)/.test(mime);
+          if (!okMime || !(total > 0 && total <= MAX_CHUNKS) || done.has(id)) break;
+          incoming.set(id, { kind, mime, total, parts: new Array(total), got: 0, time: String(data.time || '') });
+          break;
+        }
+        case 'MEDIA_CHUNK': {
+          const id = String(data.id), m = incoming.get(id), i = Number(data.i);
+          if (!m || !(i >= 0 && i < m.total) || typeof data.d !== 'string' || m.parts[i] !== undefined) break;
+          m.parts[i] = data.d; m.got++;
+          if (m.got === m.total) finishIncoming(id, m);
+          break;
+        }
+        case 'REACT': case 'EDIT': case 'DEL': applyControl(data); break;
+        case 'LIST': listMerge(data.items); break;
+        case 'READ_RECEIPT': setTick(String(data.msgId), 'read'); break;
+        case 'CALL_END': if (CALL.s) { const c = CALL.s; try { if (c.call) c.call.close(); } catch (e) {} endCall(false, c.dir === 'in' && c.state === 'ringing' ? 'missed' : 'remote'); } break;
+        case 'SCREENSHOT_ALERT': systemAlert('Peer took a screenshot!'); break;
+      }
+    } catch (e) { console.error('[data]', e); }
+  }
+
+  /* ================= IMAGES & VOICE NOTES ================= */
+  const CHUNK = 12000;              // base64 characters per message
+  const MAX_CHUNKS = 220;           // ~2 MB cap on anything we send or accept
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const nowTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const newId = () => Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+
+  function blobToBase64(blob) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(String(r.result).split(',')[1] || '');
+      r.onerror = () => rej(r.error);
+      r.readAsDataURL(blob);
+    });
+  }
+  function base64ToBlob(b64, mime) {
+    const bin = atob(b64), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return new Blob([u8], { type: mime });
+  }
+
+  // PeerJS does not split JSON messages, so big payloads are chunked here (in order, over the reliable channel)
+  async function sendMedia(id, kind, blob) {
+    const b64 = await blobToBase64(blob);
+    const total = Math.ceil(b64.length / CHUNK);
+    if (!total || total > MAX_CHUNKS) return false;
+    if (!send({ type: 'MEDIA_START', id, kind, mime: blob.type, total, time: nowTime() })) return false;
+    for (let i = 0; i < total; i++) {
+      const c = openConn();
+      if (!c) return false;
+      while (c.dataChannel && c.dataChannel.bufferedAmount > 512 * 1024) await sleep(40);   // don't flood the channel
+      if (!send({ type: 'MEDIA_CHUNK', id, i, d: b64.slice(i * CHUNK, (i + 1) * CHUNK) })) return false;
+    }
+    return true;
+  }
+
+  function finishIncoming(id, m) {
+    incoming.delete(id); done.add(id);
+    const blob = base64ToBlob(m.parts.join(''), m.mime);
+    const url = mkUrl(blob);
+    send({ type: 'READ_RECEIPT', msgId: id });
+    if (m.kind === 'image') {
+      const e = { id, who: 'peer', kind: 'image', time: m.time, st: '' };   // no pixel data is ever saved
+      history.push(e); seen.add(id); saveHistory(); media.set(id, url);
+      addMedia(e, url);
+    } else {
+      addMedia({ id, who: 'peer', kind: 'voice', time: m.time }, url);      // voice: memory only, no history entry at all
+    }
+    chime(); fakeNotification();
+  }
+
+  /* ---- images: resized + re-encoded in the browser before sending ---- */
+  function loadImage(file) {
+    return new Promise((res, rej) => {
+      const u = URL.createObjectURL(file), im = new Image();
+      im.onload = () => { URL.revokeObjectURL(u); res(im); };
+      im.onerror = () => { URL.revokeObjectURL(u); rej(new Error('bad image')); };
+      im.src = u;
+    });
+  }
+
+  // Shrinks any drawable (image, video frame, canvas) and re-encodes it as JPEG
+  async function compressSource(el, w, h) {
+    let max = 1280, q = 0.72, blob = null;
+    for (let k = 0; k < 4; k++) {
+      const s = Math.min(1, max / Math.max(w, h));
+      const cv = document.createElement('canvas');
+      cv.width = Math.max(1, Math.round(w * s));
+      cv.height = Math.max(1, Math.round(h * s));
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);     // flatten transparency
+      ctx.drawImage(el, 0, 0, cv.width, cv.height);
+      blob = await new Promise((r) => cv.toBlob(r, 'image/jpeg', q));
+      if (blob && blob.size <= 350 * 1024) break;                          // small enough
+      max = Math.round(max * 0.8); q = Math.max(0.5, q - 0.08);
+    }
+    return blob;
+  }
+
+  async function compressImage(file) {
+    const im = await loadImage(file);
+    return compressSource(im, im.naturalWidth, im.naturalHeight);
+  }
+
+  function openImagePicker() {
+    if (!openConn()) { systemAlert('Partner is offline. Photos can only be sent while connected.'); return; }
+    $('img-input').click();
+  }
+
+  // Shows the photo in the chat and sends it. Nothing but a placeholder is ever saved.
+  async function sendPhoto(blob) {
+    const e = { id: newId(), who: 'self', kind: 'image', time: nowTime(), st: 'pending' };
+    const url = mkUrl(blob);
+    media.set(e.id, url);
+    history.push(e); seen.add(e.id); saveHistory();
+    addMedia(e, url);
+    const ok = await sendMedia(e.id, 'image', blob);
+    setTick(e.id, ok ? 'sent' : 'fail');
+    if (!ok) systemAlert('Photo not delivered: connection lost.');
+  }
+
+  async function pickImage(input) {
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!file || !/^image\//.test(file.type)) return;
+    try {
+      const blob = await compressImage(file);
+      if (!blob) throw new Error('compress failed');
+      await sendPhoto(blob);
+    } catch (err) { console.error('[image]', err); systemAlert('Could not process that image.'); }
+  }
+
+  /* ---- live camera: viewfinder inside the app, photo goes straight to the partner ---- */
+  function stopCamera() {
+    if (!cam) return;
+    if (cam.stream) cam.stream.getTracks().forEach((tr) => tr.stop());       // turns the camera light off
+    cam.overlay.remove();
+    cam = null;
+  }
+
+  async function startStream(facing) {
+    if (cam.stream) cam.stream.getTracks().forEach((tr) => tr.stop());
+    cam.stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false
+    });
+    cam.facing = facing;
+    cam.video.srcObject = cam.stream;
+    cam.video.style.transform = facing === 'user' ? 'scaleX(-1)' : '';       // mirror the selfie preview only
+  }
+
+  function renderCamBar() {
+    const review = cam.mode === 'review';
+    cam.left.innerHTML = '<i class="fa-solid ' + (review ? 'fa-rotate-left' : 'fa-xmark') + '"></i>';
+    cam.left.title = review ? 'Retake' : 'Close';
+    cam.mid.className = 'cam-shutter' + (review ? ' send' : '');
+    cam.mid.innerHTML = review ? '<i class="fa-solid fa-paper-plane"></i>' : '';
+    cam.mid.title = review ? 'Send' : 'Take photo';
+    cam.right.style.visibility = review ? 'hidden' : 'visible';
+    cam.video.style.display = review ? 'none' : 'block';
+    cam.snap.style.display = review ? 'block' : 'none';
+  }
+
+  async function openCamera() {
+    if (cam) return;
+    if (CALL.s) { toast('Finish the call first'); return; }
+    if (!openConn()) { systemAlert('Partner is offline. Photos can only be sent while connected.'); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { systemAlert('The camera is not supported in this browser.'); return; }
+    const ov = document.createElement('div');
+    ov.className = 'cam-overlay';
+    ov.innerHTML = '<video class="cam-video" autoplay playsinline muted></video><canvas class="cam-snap" style="display:none"></canvas>' +
+      '<div class="cam-bar"><button class="cam-btn" id="cam-left"></button><button id="cam-mid"></button>' +
+      '<button class="cam-btn" id="cam-right" title="Switch camera"><i class="fa-solid fa-camera-rotate"></i></button></div>';
+    document.body.appendChild(ov);
+    cam = { overlay: ov, video: ov.querySelector('video'), snap: ov.querySelector('canvas'),
+            left: ov.querySelector('#cam-left'), mid: ov.querySelector('#cam-mid'), right: ov.querySelector('#cam-right'),
+            stream: null, facing: 'environment', mode: 'live' };
+    try { await startStream('environment'); }
+    catch (e) {
+      stopCamera();
+      systemAlert(e && e.name === 'NotAllowedError' ? 'Camera access was denied.' : 'Could not start the camera.');
+      return;
+    }
+    renderCamBar();
+
+    cam.left.onclick = () => { if (cam.mode === 'review') { cam.mode = 'live'; renderCamBar(); } else stopCamera(); };
+    cam.right.onclick = () => startStream(cam.facing === 'user' ? 'environment' : 'user').catch(() => systemAlert('Could not switch the camera.'));
+    cam.mid.onclick = async () => {
+      if (cam.mode === 'live') {                                             // take the shot, freeze it for review
+        const v = cam.video;
+        if (!v.videoWidth) return;
+        cam.snap.width = v.videoWidth; cam.snap.height = v.videoHeight;
+        cam.snap.getContext('2d').drawImage(v, 0, 0);
+        cam.mode = 'review'; renderCamBar();
+        return;
+      }
+      if (!openConn()) { stopCamera(); systemAlert('Partner went offline. The photo was discarded.'); return; }
+      const c = cam.snap;
+      const blob = await compressSource(c, c.width, c.height);
+      stopCamera();                                                          // release the camera before sending
+      if (blob) await sendPhoto(blob); else systemAlert('Could not process that photo.');
+    };
+  }
+
+  /* ---- voice notes: recorded into RAM, streamed to the partner, never stored ---- */
+  function pickMime() {
+    const c = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg;codecs=opus'];
+    return c.find((m) => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+  }
+
+  function recUI(on) {
+    $('btn-mic').classList.toggle('recording', on);
+    $('btn-mic').firstElementChild.className = on ? 'fa-solid fa-stop' : 'fa-solid fa-microphone';
+    $('btn-rec-cancel').style.display = on ? 'flex' : 'none';
+    const inp = $('chat-input');
+    inp.disabled = on;
+    inp.placeholder = on ? 'Recording... tap stop to send' : 'Send a message...';
+  }
+
+  async function toggleRecord() {
+    if (rec) { rec.stop(true); return; }
+    if (CALL.s) { toast('Finish the call first'); return; }
+    if (!openConn()) { systemAlert('Partner is offline. Voice notes are only sent live.'); return; }
+    if (!navigator.mediaDevices || !window.MediaRecorder) { systemAlert('Voice notes are not supported in this browser.'); return; }
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (e) { systemAlert('Microphone access was denied.'); return; }
+
+    const mime = pickMime(), chunks = [];
+    const mr = new MediaRecorder(stream, Object.assign({ audioBitsPerSecond: 24000 }, mime ? { mimeType: mime } : {}));
+    const r = { doSend: true, t0: Date.now(), timer: null, cap: null,
+      stop(doSend) { r.doSend = doSend; if (mr.state !== 'inactive') mr.stop(); } };
+
+    mr.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };      // RAM only
+    mr.onstop = () => {
+      clearInterval(r.timer); clearTimeout(r.cap);
+      stream.getTracks().forEach((tr) => tr.stop());                                      // release the microphone
+      rec = null; recUI(false);
+      const blob = new Blob(chunks, { type: mr.mimeType || mime || 'audio/webm' });
+      chunks.length = 0;
+      if (r.doSend && blob.size > 0) deliverVoice(blob);
+    };
+
+    rec = r; recUI(true);
+    mr.start();
+    r.timer = setInterval(() => {
+      const s = Math.floor((Date.now() - r.t0) / 1000);
+      $('chat-input').placeholder = 'Recording ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' - tap stop to send';
+    }, 500);
+    r.cap = setTimeout(() => r.stop(true), 60000);                                        // 60 s limit
+  }
+
+  function cancelRecord() { if (rec) rec.stop(false); }
+
+  async function deliverVoice(blob) {
+    if (!openConn()) { systemAlert('Partner went offline. The voice note was discarded.'); return; }
+    const m = { id: newId(), who: 'self', kind: 'voice', time: nowTime(), st: 'pending' };
+    addMedia(m, mkUrl(blob));                      // plays from memory; deliberately NOT added to history/localStorage
+    const ok = await sendMedia(m.id, 'voice', blob);
+    setTick(m.id, ok ? 'sent' : 'fail');
+    if (!ok) systemAlert('Voice note not delivered: connection lost.');
+  }
+
+  /* ================= TELEGRAM ALERT (Ping) ================= */
+  // The bot token is typed in on the device and kept in localStorage only. It is never part of this file,
+  // because anything in a GitHub Pages file is public.
+  const TG_KEY = 'aura_tg';
+  let tgHinted = false;
+
+  // Built-in default so Ping works on every device with no setup.
+  // NOTE: this file is public on GitHub Pages, so anyone can read the token below.
+  const TG_DEFAULT = { token: '8201179598:AAFe1HdXaKLLVC9CaI3_03kr5Zl82A-rm7w', chat: '5505142102' };
+
+  function loadTg() {
+    try {
+      const c = JSON.parse(localStorage.getItem(TG_KEY) || 'null');
+      if (c && c.token && c.chat) return c;              // a value saved on this device wins
+    } catch (e) {}
+    return TG_DEFAULT.token && TG_DEFAULT.chat ? TG_DEFAULT : null;
+  }
+  const tgValid = (token, chat) => /^\d{5,}:[\w-]{30,}$/.test(token) && /^-?\d{5,}$/.test(chat);
+
+  // 'ok' | 'fail' (Telegram refused) | 'unknown' (blocked/offline: may or may not have arrived)
+  async function telegramSend(cfg, text) {
+    try {
+      const r = await fetch('https://api.telegram.org/bot' + cfg.token + '/sendMessage', {
+        method: 'POST',
+        body: new URLSearchParams({ chat_id: cfg.chat, text })
+      });
+      return r.ok ? 'ok' : 'fail';
+    } catch (e) { return 'unknown'; }
+  }
+
+  function openTgSettings() {
+    if (document.querySelector('.tg-modal')) return;
+    const m = document.createElement('div');
+    m.className = 'tg-modal';
+    m.innerHTML = '<div class="tg-card"><strong>Alerts and offline secret</strong>' +
+      '<small>A Ping also sends its text to the chat below through your bot, so the alert arrives even if the browser is closed. Saved on this device only.</small>' +
+      '<label for="tg-token">Bot token</label><input id="tg-token" type="password" autocomplete="off" placeholder="123456789:AA...">' +
+      '<label for="tg-chat">Chat ID to notify</label><input id="tg-chat" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 123456789">' +
+      '<label for="tg-secret">Offline-message secret (same on both phones, optional)</label><input id="tg-secret" type="password" autocomplete="off" placeholder="a long private phrase">' +
+      '<div class="tg-row"><button class="btn-connect" id="tg-save">Save</button><button class="btn-connect" id="tg-test">Test</button>' +
+      '<button class="btn-connect" id="tg-clear">Clear</button><button class="btn-connect" id="tg-close">Close</button></div><div id="tg-msg"></div></div>';
+    document.body.appendChild(m);
+
+    const cur = loadTg(), msg = (s) => { $('tg-msg').textContent = s; };
+    if (cur) { $('tg-chat').value = cur.chat; $('tg-token').placeholder = 'saved (leave empty to keep)'; }
+    const form = () => ({ token: $('tg-token').value.trim() || (cur ? cur.token : ''), chat: $('tg-chat').value.trim() });
+
+    let hasSecret = false;
+    try { hasSecret = !!localStorage.getItem(RELAY_SECRET_KEY); } catch (e) {}
+    if (hasSecret) $('tg-secret').placeholder = 'saved (leave empty to keep)';
+
+    $('tg-save').onclick = () => {
+      const sec = $('tg-secret').value.trim();
+      if (sec) {
+        if (sec.length < 8) { msg('The offline secret needs at least 8 characters.'); return; }
+        try { localStorage.setItem(RELAY_SECRET_KEY, sec); relayKeyCache = null; } catch (e) { msg('Could not save on this device.'); return; }
+      }
+      const f = form();
+      if (!tgValid(f.token, f.chat)) { msg('Token or chat ID looks wrong.'); return; }
+      try { localStorage.setItem(TG_KEY, JSON.stringify(f)); msg('Saved.'); } catch (e) { msg('Could not save on this device.'); }
+    };
+    $('tg-test').onclick = async () => {
+      const f = form();
+      if (!tgValid(f.token, f.chat)) { msg('Token or chat ID looks wrong.'); return; }
+      msg('Sending...');
+      const r = await telegramSend(f, 'AURA Store: test alert');
+      msg(r === 'ok' ? 'Sent. Check Telegram.' : r === 'fail' ? 'Telegram refused it: check the token, and that you pressed Start on the bot.' : 'Could not reach Telegram.');
+    };
+    $('tg-clear').onclick = () => { try { localStorage.removeItem(TG_KEY); localStorage.removeItem(RELAY_SECRET_KEY); relayKeyCache = null; } catch (e) {} $('tg-secret').value = ''; $('tg-token').value = ''; $('tg-chat').value = ''; msg('Device override removed (the built-in default still applies).'); };
+    $('tg-close').onclick = () => m.remove();
+  }
+
+  // tap = ping, long-press = Telegram setup
+  function initPingButton() {
+    const btn = $('btn-ping');
+    let timer = null, long = false;
+    btn.addEventListener('pointerdown', () => { long = false; timer = setTimeout(() => { long = true; openTgSettings(); }, 600); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => btn.addEventListener(ev, () => clearTimeout(timer)));
+    btn.addEventListener('contextmenu', (e) => e.preventDefault());
+    btn.addEventListener('click', () => { if (long) { long = false; return; } sendPing(); });
+  }
+
+  /* ================= OFFLINE RELAY (store-and-forward) ================= */
+  // When the partner is not connected, messages are AES-GCM encrypted in the browser and left on the free
+  // public ntfy.sh service, which holds them for ~12 hours. The partner's page fetches them when it opens.
+  // Photos and voice notes are too big for it and stay live-only.
+  const RELAY = 'https://ntfy.sh/';
+  const RELAY_SECRET_KEY = 'aura_relay_secret', RELAY_CURSOR_KEY = 'aura_relay_since', CID_KEY = 'aura_cid';
+  const RELAY_MAX = 3900;                                // ntfy message size limit is 4096 bytes
+  let relayKeyCache = null;
+
+  const clientId = (() => {
+    try { let v = localStorage.getItem(CID_KEY); if (!v) { v = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem(CID_KEY, v); } return v; }
+    catch (e) { return 'c' + Math.random().toString(36).slice(2); }
+  })();
+  const toHex = (u8) => Array.from(u8, (b) => b.toString(16).padStart(2, '0')).join('');
+  const toB64 = (u8) => { let s = ''; for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]); return btoa(s); };
+  const fromB64 = (s) => { const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+
+  // Topic name and encryption key both come from a shared secret (the passcode unless a private one is set in the setup box)
+  async function relayKey() {
+    if (!(window.crypto && crypto.subtle)) return null;
+    let secret = PASSCODE;
+    try { secret = localStorage.getItem(RELAY_SECRET_KEY) || PASSCODE; } catch (e) {}
+    if (relayKeyCache && relayKeyCache.secret === secret) return relayKeyCache;
+    const enc = new TextEncoder();
+    const topicHash = new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode('aura-topic-v1:' + secret)));
+    const base = await crypto.subtle.importKey('raw', enc.encode(secret), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: enc.encode('aura-relay-key-v1'), iterations: 100000, hash: 'SHA-256' },
+      base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    relayKeyCache = { secret, topic: 'aura-' + toHex(topicHash).slice(0, 32), key };
+    return relayKeyCache;
+  }
+
+  // true = stored | 'big' = too large for the relay | false = unreachable
+  async function relayPost(obj) {
+    try {
+      const k = await relayKey();
+      if (!k) return false;
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k.key, new TextEncoder().encode(JSON.stringify(obj))));
+      const all = new Uint8Array(12 + ct.length); all.set(iv); all.set(ct, 12);
+      const body = toB64(all);
+      if (body.length > RELAY_MAX) return 'big';
+      const r = await fetch(RELAY + k.topic, { method: 'POST', body });
+      return r.ok;
+    } catch (e) { return false; }
+  }
+
+  async function relayStore(e, announce) {
+    const w = wire(e);
+    const ok = await relayPost({ v: 1, t: 'm', from: clientId, id: e.id, text: e.text, time: e.time, ping: !!e.ping, reply: w.reply });
+    if (ok === true) setTick(e.id, 'sent');
+    if (announce && (ok === 'big' || !S.hinted)) {          // a too-long message is always explained
+      S.hinted = true;
+      systemAlert(ok === true ? 'Partner is offline. Your message is stored on the offline relay and arrives when they open the chat (kept about 12 hours).'
+        : ok === 'big' ? 'Partner is offline and this message is too long for the offline relay. It is saved and sent when they connect.'
+        : 'Partner is offline and the relay is unreachable. Message saved; it is sent when a connection is possible.');
+    }
+  }
+
+  async function relayHandle(k, b64) {
+    let o;
+    try {
+      const u = fromB64(b64);
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u.slice(0, 12) }, k.key, u.slice(12));
+      o = JSON.parse(new TextDecoder().decode(pt));
+    } catch (e) { return; }                                // not ours / corrupt: ignore
+    if (!o || o.v !== 1 || o.from === clientId) return;    // skip our own posts
+    if (o.t === 'm') receiveChat({ id: o.id, text: o.text, time: o.time, ping: o.ping, reply: o.reply });
+    else if (o.t === 'r') setTick(String(o.id), 'read');
+    else if (o.t === 'c') applyControl(o.ev);
+    else if (o.t === 'l') listMerge(o.items);
+  }
+
+  async function relayPoll() {
+    if (!S.armed || S.polling) return;
+    S.polling = true;
+    try {
+      const k = await relayKey();
+      if (!k) return;
+      let cur = null;
+      try { cur = JSON.parse(localStorage.getItem(RELAY_CURSOR_KEY) || 'null'); } catch (e) {}
+      const since = cur && cur.topic === k.topic && cur.time ? cur.time : 'all';
+      const r = await fetch(RELAY + k.topic + '/json?poll=1&since=' + encodeURIComponent(since));
+      if (!r.ok) return;
+      for (const line of (await r.text()).split('\n')) {
+        if (!line.trim()) continue;
+        let ev; try { ev = JSON.parse(line); } catch (e) { continue; }
+        if (ev.event !== 'message' || typeof ev.message !== 'string') continue;
+        await relayHandle(k, ev.message);
+        try { localStorage.setItem(RELAY_CURSOR_KEY, JSON.stringify({ topic: k.topic, time: ev.time })); } catch (e) {}
+      }
+    } catch (e) { /* offline: try again next tick */ }
+    finally { S.polling = false; }
+  }
+
+  // While the partner is not connected: re-offer anything the relay has not taken yet, and look for new mail
+  function relayTick() {
+    if (!S.armed || openConn()) return;
+    history.filter((h) => h.who === 'self' && !h.kind && !h.deleted && h.st === 'pending').slice(-20).forEach((e) => relayStore(e, false));
+    relayPoll();
+  }
+  setInterval(relayTick, 15000);
+
+  /* ================= SOUND & NOTIFICATIONS ================= */
+  function chime() {
+    if (!S.audio || !S.audioCtx) return;
+    try {
+      const ctx = S.audioCtx;
+      if (ctx.state === 'suspended') ctx.resume();
+      const osc = ctx.createOscillator(), gain = ctx.createGain(), t = ctx.currentTime;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, t);
+      osc.frequency.exponentialRampToValueAtTime(880, t + 0.15);
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(t + 0.15);
+    } catch (e) {}
+  }
+
+  const NOTE_ICON = 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png';
+  let swReg = null;
+
+  // Android Chrome refuses new Notification(); it needs a service worker to show them
+  async function registerSW() {
+    if (!('serviceWorker' in navigator)) return;
+    try { swReg = await navigator.serviceWorker.register('sw.js'); } catch (e) { console.warn('[sw]', e); }
+  }
+
+  // Shown only when the chat is not on screen (other tab, app in background, or locked)
+  function fakeNotification(text) {
+    try {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      if (!(document.hidden || S.locked)) return;
+      const promos = [
+        'AURA Store: Flash Sale Alert! Up to 50% Off.',
+        'AURA Store: Items in your wishlist are back in stock!',
+        'AURA Store: Exclusive Promo Code inside.'
+      ];
+      const opts = { body: text || promos[Math.floor(Math.random() * promos.length)], icon: NOTE_ICON, badge: NOTE_ICON, vibrate: [200, 100, 200] };
+      if (text) { opts.tag = 'aura-ping'; opts.renotify = true; }     // every ping alerts, without stacking
+      if (swReg && swReg.active) {
+        swReg.showNotification('AURA Store', opts).catch(() => {});
+        return;
+      }
+      const n = new Notification('AURA Store', opts);
+      n.onclick = () => { window.focus(); lockView(); n.close(); };
+    } catch (e) { /* some browsers forbid notifications here; ignore */ }
+  }
+
+  function toggleAudio() {
+    S.audio = !S.audio;
+    $('btn-sound').style.opacity = S.audio ? '1' : '0.4';
+  }
+
+  /* ================= LOCK / UNLOCK ================= */
+  // Locking only hides the UI. The connection stays alive so messages keep arriving.
+  function lockView() {
+    S.locked = true;
+    clearTimeout(S.lockTimer);
+    $('chat-view').style.display = 'none';
+    $('store-view').style.display = 'block';
+    $('store-search').value = ''; filterStore('');   // nothing left for the browser to restore or autofill
+    showTab('chat');
+    if (rec) rec.stop(false);                // never keep the microphone open behind the store page
+    document.querySelectorAll('.lightbox, .tg-modal, .msg-menu').forEach((x) => x.remove());
+    stopCamera();                            // never keep the camera open behind the store page
+    lockCall();                              // calls never continue behind the store page
+    clearReply();
+  }
+  function resetLockTimer() {
+    clearTimeout(S.lockTimer);
+    if (!S.locked && !CALL.s) S.lockTimer = setTimeout(lockView, LOCK_MS);
+  }
+
+  // Typing the passcode in the store search box opens the chat and connects automatically
+  function checkSecretPasscode(v) {
+    if (v.trim() !== PASSCODE) return;
+    $('store-search').value = ''; filterStore('');
+    S.locked = false;
+    $('store-view').style.display = 'none';
+    $('chat-view').style.display = 'flex';
+    try { S.audioCtx = S.audioCtx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+    try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch (e) {}
+    initPeer();
+    joinRoom();
+    S.armed = true;
+    relayPoll();
+    resetLockTimer();
+    fitViewport();
+    scrollDown();
+    showPendingCall();
+  }
+
+  ['click', 'touchstart', 'mousemove', 'keydown'].forEach((e) => window.addEventListener(e, resetLockTimer, { passive: true }));
+
+  window.addEventListener('keyup', (e) => {
+    if (e.key === 'PrintScreen' && !S.locked) {
+      systemAlert('Screenshot activity detected on your device!');
+      send({ type: 'SCREENSHOT_ALERT' });
+    }
+  });
+
+  /* ================= MESSAGE ACTIONS: reactions, edit, delete, copy ================= */
+  const EMOJIS = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
+
+  function toast(msg) {
+    const d = document.createElement('div');
+    d.className = 'toast'; d.textContent = msg;
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 1500);
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); }
+    catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e2) {}
+      ta.remove();
+    }
+    toast('Copied');
+  }
+
+  // Edits, deletes, reactions: live over P2P, otherwise through the offline relay
+  async function sendCtl(ev) {
+    if (send(ev)) return true;
+    const ok = await relayPost({ v: 1, t: 'c', from: clientId, ev });
+    if (ok !== true) systemAlert('Could not reach your partner right now. The change is saved on this device only.');
+    return ok === true;
+  }
+
+  function openMsgMenu(b) {
+    if (document.querySelector('.msg-menu')) return;
+    const id = b.dataset.mid, e = entryFor(id);
+    if (!e || e.deleted) return;
+    const m = document.createElement('div'); m.className = 'msg-menu';
+    const sheet = document.createElement('div'); sheet.className = 'msg-sheet';
+    const close = () => m.remove();
+    const row = document.createElement('div'); row.className = 'msg-emojis';
+    EMOJIS.forEach((em) => {
+      const bt = document.createElement('button');
+      bt.textContent = em;
+      if (e.rx && e.rx.me === em) bt.className = 'on';
+      bt.onclick = () => { close(); react(id, e.rx && e.rx.me === em ? null : em); };
+      row.appendChild(bt);
+    });
+    sheet.appendChild(row);
+    const act = (icon, label, fn, danger) => {
+      const bt = document.createElement('button');
+      bt.className = 'act' + (danger ? ' danger' : '');
+      bt.innerHTML = '<i class="fa-solid fa-' + icon + '"></i>';
+      bt.append(label);
+      bt.onclick = () => { close(); fn(); };
+      sheet.appendChild(bt);
+    };
+    act('reply', 'Reply', () => startReply(b));
+    if (isText(e)) act('copy', 'Copy text', () => copyText(e.text));
+    if (e.who === 'self' && isText(e) && !e.ping) act('pen', 'Edit', () => startEdit(id));
+    act('eye-slash', 'Delete for me', () => deleteForMe(id));
+    if (e.who === 'self') act('trash', 'Delete for everyone', () => { if (confirm('Delete this message for both of you?')) deleteForAll(id); }, true);
+    m.onclick = (ev) => { if (ev.target === m) close(); };
+    m.appendChild(sheet);
+    document.body.appendChild(m);
+  }
+
+  function react(id, emoji) {
+    const e = entryFor(id);
+    if (!e) return;
+    e.rx = Object.assign({}, e.rx, { me: emoji || null });
+    saveHistory(); refreshBubble(id);
+    sendCtl({ type: 'REACT', id, emoji: emoji || null });
+  }
+
+  function startEdit(id) {
+    const e = entryFor(id);
+    if (!e) return;
+    S.replyTo = null; S.editing = id;
+    $('reply-who').textContent = 'Edit message';
+    $('reply-snip').textContent = e.text;
+    $('reply-bar').style.display = 'flex';
+    const inp = $('chat-input'); inp.value = e.text; inp.focus({ preventScroll: true });
+  }
+
+  function commitEdit(id, text) {
+    const e = entryFor(id);
+    if (!e || e.deleted || e.text === text) return;
+    e.text = text; e.edited = true;
+    saveHistory(); refreshBubble(id);
+    sendCtl({ type: 'EDIT', id, text });
+  }
+
+  function tombstone(e) {
+    e.deleted = true; e.text = ''; e.reply = undefined; e.rx = undefined; e.edited = false;
+    const u = media.get(e.id) || e.url;
+    if (u) { URL.revokeObjectURL(u); urls.delete(u); media.delete(e.id); }
+    e.url = undefined;
+    history.forEach((h) => { if (h.reply && h.reply.id === e.id) h.reply.text = 'Deleted message'; });
+    document.querySelectorAll('.reply-quote[data-rid="' + CSS.escape(String(e.id)) + '"] span').forEach((s) => { s.textContent = 'Deleted message'; });
+  }
+
+  function deleteForAll(id) {
+    const e = entryFor(id);
+    if (!e) return;
+    tombstone(e); saveHistory(); refreshBubble(id);
+    sendCtl({ type: 'DEL', id });
+  }
+
+  function deleteForMe(id) {
+    const e = entryFor(id);
+    if (!e) return;
+    const u = media.get(id) || e.url;
+    if (u) { URL.revokeObjectURL(u); urls.delete(u); media.delete(id); }
+    const i = history.indexOf(e); if (i >= 0) history.splice(i, 1);
+    transient.delete(id); saveHistory();
+    const b = bubbleEl(id); if (b) b.remove();
+  }
+
+  // The partner can only change messages that are theirs (who === 'peer' here)
+  function applyControl(ev) {
+    if (!ev || typeof ev !== 'object') return;
+    const id = String(ev.id || ''), e = entryFor(id);
+    if (!e) { const a = stash.get(id) || []; if (a.length < 20) a.push(ev); stash.set(id, a); return; }
+    if (ev.type === 'REACT') e.rx = Object.assign({}, e.rx, { them: EMOJIS.includes(ev.emoji) ? ev.emoji : null });
+    else if (e.who === 'peer' && ev.type === 'EDIT' && isText(e) && !e.deleted) { e.text = String(ev.text == null ? '' : ev.text).slice(0, 2000); e.edited = true; }
+    else if (e.who === 'peer' && ev.type === 'DEL') tombstone(e);
+    else return;
+    saveHistory(); refreshBubble(id);
+  }
+
+  function drainStash(id) {
+    const a = stash.get(id);
+    if (!a) return;
+    stash.delete(id);
+    a.forEach(applyControl);
+  }
+
+  // Pasting a picture into the message box sends it as a photo (plain text pastes normally)
+  function initPaste() {
+    $('chat-input').addEventListener('paste', (ev) => {
+      const f = Array.from((ev.clipboardData && ev.clipboardData.files) || []).find((x) => /^image\//.test(x.type));
+      if (!f) return;
+      ev.preventDefault();
+      if (!openConn()) { systemAlert('Partner is offline. Photos can only be sent while connected.'); return; }
+      compressImage(f).then((blob) => blob && sendPhoto(blob)).catch(() => systemAlert('Could not process that image.'));
+    });
+  }
+
+  /* ================= SHARED SHOPPING LIST ================= */
+  // Every item carries a timestamp; the newest change wins. Deleted items stay as tiny tombstones so deletes sync.
+  const LIST_KEY = 'aura_list';
+  let list = [];
+  let listUnseen = 0;
+  const liveItems = () => list.filter((i) => !i.del);
+
+  function loadList() { try { const a = JSON.parse(localStorage.getItem(LIST_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function saveList() {
+    const cut = Date.now() - 3 * 86400000;
+    list = list.filter((i) => !i.del || i.ts > cut);
+    try { localStorage.setItem(LIST_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function renderList() {
+    const box = $('list-items');
+    box.textContent = '';
+    const items = liveItems();
+    if (!items.length) { const d = document.createElement('div'); d.className = 'list-empty'; d.textContent = 'Nothing here yet. Add something to buy.'; box.appendChild(d); }
+    items.forEach((it) => {
+      const row = document.createElement('div'); row.className = 'list-item' + (it.done ? ' done' : '');
+      const chk = document.createElement('button'); chk.className = 'list-chk'; chk.innerHTML = it.done ? '<i class="fa-solid fa-check"></i>' : '';
+      chk.onclick = () => { it.done = !it.done; touchList(it); };
+      const s = document.createElement('span'); s.textContent = it.text;
+      const x = document.createElement('button'); x.className = 'list-x'; x.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      x.onclick = () => { it.del = true; it.text = ''; touchList(it); };
+      row.append(chk, s, x); box.appendChild(row);
+    });
+    $('list-count').textContent = items.filter((i) => !i.done).length + ' to buy \u00b7 ' + items.filter((i) => i.done).length + ' done';
+  }
+
+  function touchList(it) { if (it) it.ts = Date.now(); saveList(); renderList(); listSync(); }
+
+  function addListItem() {
+    const inp = $('list-input'), text = inp.value.trim().slice(0, 60);
+    if (!text) return;
+    if (liveItems().length >= 40) { toast('The list is full (40 items)'); return; }
+    list.push({ id: Math.random().toString(36).slice(2, 8), text, done: false, ts: Date.now(), del: false });
+    inp.value = '';
+    touchList(null); inp.focus();
+  }
+
+  function clearDone() {
+    const now = Date.now();
+    liveItems().filter((i) => i.done).forEach((i) => { i.del = true; i.text = ''; i.ts = now; });
+    touchList(null);
+  }
+
+  async function listSync() {
+    const rows = list.map((i) => [i.id, i.text, i.done ? 1 : 0, i.ts, i.del ? 1 : 0]);
+    if (send({ type: 'LIST', items: rows })) return;
+    if (await relayPost({ v: 1, t: 'l', from: clientId, items: rows }) === 'big') toast('The list is too long to sync offline');
+  }
+
+  function listMerge(rows) {
+    if (!Array.isArray(rows)) return;
+    let changed = false;
+    rows.slice(0, 120).forEach((r) => {
+      if (!Array.isArray(r) || typeof r[0] !== 'string' || typeof r[3] !== 'number') return;
+      const it = { id: r[0].slice(0, 12), text: String(r[1] || '').slice(0, 60), done: !!r[2], ts: r[3], del: !!r[4] };
+      const cur = list.find((i) => i.id === it.id);
+      if (!cur) { list.push(it); changed = true; }
+      else if (it.ts > cur.ts) { Object.assign(cur, it); changed = true; }
+    });
+    if (!changed) return;
+    saveList(); renderList();
+    if (S.tab !== 'list') { listUnseen++; updateBadge(); toast('Shopping list updated'); }
+  }
+
+  function updateBadge() {
+    const b = $('list-badge');
+    b.textContent = listUnseen; b.style.display = listUnseen ? 'inline-block' : 'none';
+  }
+
+  function showTab(name) {
+    S.tab = name;
+    $('chat-view').classList.toggle('tab-list', name === 'list');
+    $('tab-chat').classList.toggle('active', name === 'chat');
+    $('tab-list').classList.toggle('active', name === 'list');
+    if (name === 'list') { listUnseen = 0; updateBadge(); renderList(); }
+    else scrollDown();
+  }
+
+
+  /* ================= VOICE & VIDEO CALLS ================= */
+  // Calls run over PeerJS media connections, on the same peers that carry the chat.
+  // Only the connected partner can ring you, nothing is recorded, and a call never survives a lock.
+  const CALL = { s: null };
+  const CALL_TEXT = 'Your order update is ready \u{1F4E6}';   // what a locked screen shows for an incoming call
+  const RING_MS = 40000;
+
+  const fmtDur = (ms) => { const t = Math.floor(ms / 1000), p = (x) => String(x).padStart(2, '0'); return p(Math.floor(t / 60)) + ':' + p(t % 60); };
+
+  function callLog(text, icon) {
+    const d = document.createElement('div');
+    d.className = 'system-alert';
+    d.style.cssText = 'background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.15);color:#cbd5e1';
+    const i = document.createElement('i'); i.className = 'fa-solid ' + icon;
+    d.append(i, ' ' + text);
+    $('chat-messages').appendChild(d);
+    scrollDown();
+  }
+
+  function ringBeep(out) {
+    if (!S.audio || !S.audioCtx || S.locked) return;
+    try {
+      const ctx = S.audioCtx;
+      if (ctx.state === 'suspended') ctx.resume();
+      const t = ctx.currentTime;
+      (out ? [440] : [523.25, 659.25]).forEach((f, k) => {
+        const o = ctx.createOscillator(), g = ctx.createGain(), t0 = t + k * 0.22;
+        o.type = 'sine'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.4);
+        o.connect(g); g.connect(ctx.destination); o.start(t0); o.stop(t0 + 0.42);
+      });
+    } catch (e) {}
+  }
+
+  function setCallText(title, sub) {
+    const c = CALL.s; if (!c || !c.ui) return;
+    c.ui.title.textContent = title; c.ui.sub.textContent = sub;
+  }
+
+  function callButton(cls, icon, title, fn) {
+    const b = document.createElement('button');
+    b.className = 'call-btn ' + cls; b.title = title;
+    b.innerHTML = '<i class="fa-solid fa-' + icon + '"></i>';
+    b.onclick = fn;
+    return b;
+  }
+
+  function buildCallUI() {
+    const c = CALL.s;
+    if (!c || c.ui || S.locked) return;                 // never draw a call over the store page
+    const ov = document.createElement('div'); ov.className = 'call-overlay';
+    const rv = document.createElement('video'); rv.className = 'call-remote'; rv.autoplay = true; rv.playsInline = true;
+    const lv = document.createElement('video'); lv.className = 'call-local'; lv.autoplay = true; lv.playsInline = true; lv.muted = true;
+    const info = document.createElement('div'); info.className = 'call-info';
+    const ava = document.createElement('div'); ava.className = 'call-ava'; ava.textContent = ($('my-avatar').textContent || 'P').slice(0, 1);
+    const title = document.createElement('h2'), sub = document.createElement('p');
+    info.append(ava, title, sub);
+    const bar = document.createElement('div'); bar.className = 'call-bar';
+    c.ui = { ov, rv, lv, info, title, sub, bar };
+    if (!c.video) rv.style.visibility = 'hidden';       // voice call: audio only, avatar stays visible
+    if (!c.video) lv.style.display = 'none';
+    if (c.stream) { lv.srcObject = c.stream; }
+    if (c.remote) rv.srcObject = c.remote;
+    ov.append(rv, lv, info, bar);
+    document.body.appendChild(ov);
+    drawCallBar();
+    if (c.state === 'live') { setCallText('Connected', ''); markLive(); }
+    else if (c.dir === 'in') setCallText('Incoming ' + (c.video ? 'video' : 'voice') + ' call', 'Your partner is calling...');
+    else setCallText('Calling...', c.video ? 'Video call' : 'Voice call');
+    info.classList.toggle('call-ring', c.state === 'ringing');
+  }
+
+  function drawCallBar() {
+    const c = CALL.s; if (!c || !c.ui) return;
+    const bar = c.ui.bar; bar.textContent = '';
+    if (c.dir === 'in' && c.state === 'ringing') {
+      bar.append(callButton('end', 'phone-slash', 'Decline', () => declineCall()),
+                 callButton('ok', c.video ? 'video' : 'phone', 'Accept', () => acceptCall()));
+      return;
+    }
+    if (c.state === 'live') {
+      const mute = callButton(c.muted ? 'off' : '', c.muted ? 'microphone-slash' : 'microphone', 'Mute', () => toggleMute());
+      bar.append(mute);
+      if (c.video) {
+        bar.append(callButton(c.camOff ? 'off' : '', c.camOff ? 'video-slash' : 'video', 'Camera on/off', () => toggleCam()),
+                   callButton('', 'camera-rotate', 'Switch camera', () => flipCam()));
+      }
+    }
+    bar.append(callButton('end', 'phone-slash', 'Hang up', () => endCall(true)));
+  }
+
+  function markLive() {
+    const c = CALL.s; if (!c) return;
+    c.state = 'live'; c.t0 = Date.now();
+    clearTimeout(c.ringTimer); clearInterval(c.ringIv);
+    if (c.ui) {
+      c.ui.info.classList.remove('call-ring');
+      if (c.video) c.ui.info.classList.add('mini');
+      drawCallBar();
+    }
+    clearInterval(c.tick);
+    c.tick = setInterval(() => { if (CALL.s === c && c.ui) setCallText('Connected', fmtDur(Date.now() - c.t0)); }, 1000);
+    setCallText('Connected', '00:00');
+    try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then((w) => { if (CALL.s === c) c.wake = w; else w.release(); }).catch(() => {}); } catch (e) {}
+  }
+
+  function wireCall(call) {
+    const c = CALL.s;
+    c.call = call;
+    call.on('stream', (rs) => {
+      if (CALL.s !== c) return;
+      c.remote = rs;
+      if (c.ui) { c.ui.rv.srcObject = rs; const p = c.ui.rv.play(); if (p && p.catch) p.catch(() => {}); }
+      if (c.state !== 'live') markLive();
+    });
+    call.on('close', () => { if (CALL.s === c) endCall(false, 'remote'); });
+    call.on('error', (e) => { console.error('[call]', e); if (CALL.s === c) endCall(false, 'error'); });
+  }
+
+  async function getMedia(video) {
+    return navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true },
+      video: video ? { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } : false
+    });
+  }
+
+  async function startCall(video) {
+    if (CALL.s) { toast('Already in a call'); return; }
+    const conn = openConn();
+    if (!conn) { systemAlert('Partner is offline. Calls need a live connection.'); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { systemAlert('Calls are not supported in this browser.'); return; }
+    if (cam) stopCamera();
+    if (rec) rec.stop(false);
+    const sess = CALL.s = { dir: 'out', state: 'ringing', video: !!video, stream: null, ui: null };
+    let stream;
+    try { stream = await getMedia(!!video); }
+    catch (e) {
+      if (CALL.s === sess) CALL.s = null;
+      systemAlert(e && e.name === 'NotAllowedError' ? (video ? 'Camera or microphone access was denied.' : 'Microphone access was denied.') : 'Could not start the call.');
+      return;
+    }
+    if (CALL.s !== sess || S.locked) { stream.getTracks().forEach((t) => t.stop()); if (CALL.s === sess) CALL.s = null; return; }
+    sess.stream = stream;
+    try {
+      const call = conn.provider.call(conn.peer, stream, { metadata: { aura: 'call', video: !!video } });
+      if (!call) throw new Error('no call');
+      wireCall(call);
+    } catch (e) {
+      console.error('[call]', e);
+      endCall(false, 'error');
+      return;
+    }
+    buildCallUI();
+    sess.ringIv = setInterval(() => ringBeep(true), 2500); ringBeep(true);
+    sess.ringTimer = setTimeout(() => { if (CALL.s === sess && sess.state !== 'live') endCall(true, 'noanswer'); }, RING_MS);
+  }
+
+  function onIncomingCall(call) {
+    const conn = openConn();
+    const md = call.metadata || {};
+    if (!conn || conn.peer !== call.peer || md.aura !== 'call') { try { call.close(); } catch (e) {} return; }   // only our partner may ring
+    if (CALL.s) { try { call.close(); } catch (e) {} return; }                                                   // already busy
+    const sess = CALL.s = { dir: 'in', state: 'ringing', video: md.video === true, call, stream: null, ui: null };
+    call.on('close', () => { if (CALL.s === sess) endCall(false, 'remote'); });
+    call.on('error', () => { if (CALL.s === sess) endCall(false, 'error'); });
+    sess.ringTimer = setTimeout(() => { if (CALL.s === sess && sess.state === 'ringing') { try { call.close(); } catch (e) {} endCall(false, 'missed'); } }, RING_MS);
+    if (S.locked) { fakeNotification(CALL_TEXT); return; }       // stays hidden until the chat is unlocked
+    sess.ringIv = setInterval(() => ringBeep(false), 2500); ringBeep(false);
+    try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch (e) {}
+    buildCallUI();
+  }
+
+  // After unlocking, a call that rang while the store page was showing appears now
+  function showPendingCall() {
+    const c = CALL.s;
+    if (!c || c.ui || c.state !== 'ringing' || c.dir !== 'in') return;
+    clearInterval(c.ringIv);
+    c.ringIv = setInterval(() => ringBeep(false), 2500); ringBeep(false);
+    buildCallUI();
+  }
+
+  async function acceptCall() {
+    const c = CALL.s; if (!c || c.dir !== 'in' || c.state !== 'ringing') return;
+    c.state = 'connecting';
+    clearInterval(c.ringIv);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { try { c.call.close(); } catch (e) {} endCall(false, 'error'); systemAlert('Calls are not supported in this browser.'); return; }
+    if (cam) stopCamera();
+    if (rec) rec.stop(false);
+    let stream;
+    try { stream = await getMedia(c.video); }
+    catch (e) {
+      try { c.call.close(); } catch (e2) {}
+      endCall(false, 'error');
+      systemAlert(e && e.name === 'NotAllowedError' ? 'Camera or microphone access was denied.' : 'Could not start the call.');
+      return;
+    }
+    if (CALL.s !== c || S.locked) { stream.getTracks().forEach((t) => t.stop()); if (CALL.s === c) { try { c.call.close(); } catch (e) {} endCall(false, 'error'); } return; }
+    c.stream = stream;
+    if (c.ui) { c.ui.lv.srcObject = stream; }
+    setCallText('Connecting...', '');
+    drawCallBar();
+    wireCall(c.call);
+    c.call.answer(stream);
+  }
+
+  function declineCall() {
+    const c = CALL.s; if (!c) return;
+    try { c.call.close(); } catch (e) {}
+    send({ type: 'CALL_END' });
+    endCall(false, 'declined');
+  }
+
+  function toggleMute() {
+    const c = CALL.s; if (!c || !c.stream) return;
+    c.muted = !c.muted;
+    c.stream.getAudioTracks().forEach((t) => { t.enabled = !c.muted; });
+    drawCallBar();
+  }
+
+  function toggleCam() {
+    const c = CALL.s; if (!c || !c.stream) return;
+    c.camOff = !c.camOff;
+    c.stream.getVideoTracks().forEach((t) => { t.enabled = !c.camOff; });
+    drawCallBar();
+  }
+
+  async function flipCam() {
+    const c = CALL.s; if (!c || !c.video || c.flipping) return;
+    c.flipping = true;
+    try {
+      const next = c.facing === 'environment' ? 'user' : 'environment';
+      const ns = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: next }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+      const nt = ns.getVideoTracks()[0];
+      const old = c.stream.getVideoTracks()[0];
+      const pc = c.call && c.call.peerConnection;
+      const sender = pc && pc.getSenders().find((x) => x.track && x.track.kind === 'video');
+      if (sender) await sender.replaceTrack(nt);
+      if (old) { c.stream.removeTrack(old); old.stop(); }
+      nt.enabled = !c.camOff;
+      c.stream.addTrack(nt);
+      c.facing = next;
+      if (c.ui) { c.ui.lv.srcObject = c.stream; c.ui.lv.classList.toggle('rear', next === 'environment'); }
+    } catch (e) { toast('Could not switch the camera'); }
+    c.flipping = false;
+  }
+
+  // Ends the call and releases the microphone and camera. why: why it ended (for the log line).
+  function endCall(notify, why) {
+    const c = CALL.s; if (!c) return;
+    CALL.s = null;
+    clearTimeout(c.ringTimer); clearInterval(c.ringIv); clearInterval(c.tick);
+    if (notify) send({ type: 'CALL_END' });
+    try { if (c.call) c.call.close(); } catch (e) {}
+    if (c.stream) c.stream.getTracks().forEach((t) => t.stop());          // turns the camera/mic light off
+    try { if (c.wake) c.wake.release(); } catch (e) {}
+    if (c.ui) { c.ui.rv.srcObject = null; c.ui.lv.srcObject = null; c.ui.ov.remove(); }
+    const live = c.state === 'live' && c.t0;
+    const icon = c.video ? 'fa-video' : 'fa-phone';
+    if (live) callLog((c.video ? 'Video call' : 'Voice call') + ' ended \u00b7 ' + fmtDur(Date.now() - c.t0), icon);
+    else if (c.dir === 'in') callLog(why === 'declined' ? 'Call declined' : 'Missed ' + (c.video ? 'video' : 'voice') + ' call', icon);
+    else if (why === 'noanswer') callLog('No answer', icon);
+    else if (why === 'remote') callLog('Call declined or unavailable', icon);
+    else if (why === 'error') callLog('Call failed', icon);
+    else if (notify) callLog('Call cancelled', icon);
+  }
+
+  // Locking: live and outgoing calls are hung up; an incoming ring just hides until the chat is unlocked
+  function lockCall() {
+    const c = CALL.s; if (!c) return;
+    if (c.dir === 'in' && c.state === 'ringing') {
+      clearInterval(c.ringIv);
+      if (c.ui) { c.ui.ov.remove(); c.ui = null; }
+      return;
+    }
+    endCall(true);
+  }
+
+  /* ================= STORE PAGE (the cover) ================= */
+  // [name, price, category, icon, rating, reviews]
+  const PRODUCTS = [
+    ['Oversized Heavyweight Tee', 45, 'Fashion', 'shirt', 4.7, 312], ['Minimalist Wireframe Shades', 89, 'Fashion', 'glasses', 4.5, 188],
+    ['Urban Runner Low Sneakers', 120, 'Fashion', 'shoe-prints', 4.8, 641], ['Matte Chronograph Watch', 210, 'Fashion', 'clock', 4.6, 97],
+    ['Weekender Rolling Suitcase', 139, 'Fashion', 'suitcase-rolling', 4.4, 154], ['Wireless Noise-Cancelling Headphones', 179, 'Electronics', 'headphones', 4.7, 1203],
+    ['Pro Smartphone 256GB', 699, 'Electronics', 'mobile-screen-button', 4.6, 2210], ['Ultralight 14" Laptop', 949, 'Electronics', 'laptop', 4.5, 430],
+    ['Mirrorless Camera Kit', 549, 'Electronics', 'camera', 4.8, 276], ['Handheld Game Console', 329, 'Electronics', 'gamepad', 4.6, 884],
+    ['Ceramic Pour-Over Mug Set', 34, 'Home', 'mug-hot', 4.9, 521], ['Linen Lounge Armchair', 399, 'Home', 'couch', 4.3, 66],
+    ['Warm Glow Desk Lamp', 59, 'Home', 'lightbulb', 4.5, 302], ['Daily Glow Face Mist', 22, 'Beauty', 'spray-can-sparkles', 4.4, 749]
+  ];
+  let storeCat = 'All', storeQ = '';
+  const cart = (() => { try { return JSON.parse(sessionStorage.getItem('aura_cart') || '{}'); } catch (e) { return {}; } })();
+  const saveCart = () => { try { sessionStorage.setItem('aura_cart', JSON.stringify(cart)); } catch (e) {} };
+  const money = (n) => '$' + n.toFixed(2);
+
+  function cartBadge() {
+    const n = Object.values(cart).reduce((a, b) => a + b, 0);
+    $('cart-count').textContent = n; $('cart-count').style.display = n ? 'flex' : 'none';
+  }
+
+  function renderStore() {
+    const grid = $('products-grid');
+    grid.textContent = '';
+    let shown = 0;
+    PRODUCTS.forEach((p, i) => {
+      if (storeCat !== 'All' && p[2] !== storeCat) return;
+      if (storeQ && !(p[0] + ' ' + p[2]).toLowerCase().includes(storeQ)) return;
+      shown++;
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = '<div class="product-img"><i class="fa-solid fa-' + p[3] + '"></i></div><div class="product-title"></div><div class="product-rating"></div><div class="product-price"></div><button class="btn-add" data-i="' + i + '">Add to cart</button>';
+      card.querySelector('.product-title').textContent = p[0];
+      card.querySelector('.product-rating').textContent = '\u2605 ' + p[4] + ' (' + p[5] + ')';
+      card.querySelector('.product-price').textContent = money(p[1]);
+      grid.appendChild(card);
+    });
+    const nr = $('no-results');
+    nr.style.display = shown ? 'none' : 'block';
+    nr.textContent = 'No results for "' + storeQ + '". Try another search.';
+    document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('active', c.dataset.cat === storeCat));
+    cartBadge();
+  }
+
+  function filterStore(v) { storeQ = String(v || '').trim().toLowerCase(); renderStore(); }
+
+  function openCart() {
+    if (document.querySelector('.cart-sheet')) return;
+    const m = document.createElement('div'); m.className = 'msg-menu cart-sheet';
+    const sheet = document.createElement('div'); sheet.className = 'msg-sheet';
+    m.onclick = (ev) => { if (ev.target === m) m.remove(); };
+    const draw = () => {
+      sheet.textContent = '';
+      const h = document.createElement('b'); h.textContent = 'Your bag'; sheet.appendChild(h);
+      const ids = Object.keys(cart).filter((k) => cart[k] > 0);
+      if (!ids.length) { const d = document.createElement('div'); d.className = 'list-empty'; d.textContent = 'Your bag is empty.'; sheet.appendChild(d); return; }
+      let total = 0;
+      ids.forEach((k) => {
+        const p = PRODUCTS[+k]; total += p[1] * cart[k];
+        const r = document.createElement('div'); r.className = 'cart-row';
+        const nm = document.createElement('b'); nm.textContent = p[0];
+        const minus = document.createElement('button'); minus.textContent = '\u2212';
+        const q = document.createElement('span'); q.textContent = cart[k];
+        const plus = document.createElement('button'); plus.textContent = '+';
+        const pr = document.createElement('span'); pr.textContent = money(p[1] * cart[k]);
+        minus.onclick = () => { cart[k]--; saveCart(); cartBadge(); draw(); };
+        plus.onclick = () => { cart[k]++; saveCart(); cartBadge(); draw(); };
+        r.append(nm, minus, q, plus, pr); sheet.appendChild(r);
+      });
+      const tot = document.createElement('div'); tot.className = 'cart-row'; tot.innerHTML = '<b>Total</b>'; const tv = document.createElement('span'); tv.textContent = money(total); tot.appendChild(tv); sheet.appendChild(tot);
+      const go = document.createElement('button'); go.className = 'btn-add'; go.textContent = 'Checkout';
+      go.onclick = () => toast('Add a payment method to check out'); sheet.appendChild(go);
+    };
+    draw(); m.appendChild(sheet); document.body.appendChild(m);
+  }
+
+  function initStore() {
+    document.querySelector('.cat-row').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (c) { storeCat = c.dataset.cat; renderStore(); } });
+    $('products-grid').addEventListener('click', (e) => {
+      const b = e.target.closest('.btn-add'); if (!b) return;
+      cart[b.dataset.i] = (cart[b.dataset.i] || 0) + 1; saveCart(); cartBadge(); toast('Added to bag');
+    });
+    $('cart-btn').addEventListener('click', openCart);
+    const tick = () => {
+      const n = new Date(), end = new Date(n); end.setHours(23, 59, 59, 999);
+      const s = Math.max(0, Math.floor((end - n) / 1000)), p = (x) => String(x).padStart(2, '0');
+      $('sale-timer').textContent = 'Ends in ' + p(Math.floor(s / 3600)) + ':' + p(Math.floor(s % 3600 / 60)) + ':' + p(s % 60);
+    };
+    tick(); setInterval(tick, 1000);
+    renderStore();
+  }
+
+  /* ================= STARTUP: restore saved chat ================= */
+  lockView();
+  $('store-search').value = '';
+  registerSW();
+  initPingButton();
+  history = loadHistory();
+  history.forEach((h) => { seen.add(h.id); addMessage(h); });
+  list = loadList(); renderList();
+  initStore(); initPaste();
+
+  Object.assign(window, { startCall, checkSecretPasscode, toggleAudio, triggerPanicLock: lockView, handleTyping, sendMessage, sendPing, clearReply, clearHistory, filterStore, showTab, addListItem, clearDone, openCamera, openImagePicker, pickImage, toggleRecord, cancelRecord });
+})();
+</script>
+</body>
+</html>
